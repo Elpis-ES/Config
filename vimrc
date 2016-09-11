@@ -1,39 +1,110 @@
+function! s:VersionRequirement(val, min)
+    for idx in range(0, len(a:min) - 1)
+        let v = get(a:val, idx, 0)
+        if v < a:min[idx]
+            return 0
+        elseif v > a:min[idx]
+            return 1
+        endif
+    endfor
+    return 1
+endfunction
+
+if has('python')
+    redir => s:pyv
+    silent python import platform; print(platform.python_version())
+    redir END
+
+    let s:python26 = s:VersionRequirement(
+            \ map(split(split(s:pyv)[0], '\.'), 'str2nr(v:val)'), [2, 6])
+else
+    let s:python26 = 0
+endif
+
+if !empty(&rtp)
+    let s:vimfiles = split(&rtp, ',')[0]
+else
+    echohl ErrorMsg
+    echomsg 'Unable to determine runtime path for Vim.'
+    echohl NONE
+endif
+
 " Vim settings "
 set nocompatible              " be iMproved, required
 filetype off                  " required
 
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
+" Install vim-plug if it isn't installed and call plug#begin() out of box
+function! s:DownloadVimPlug()
+    if !exists('s:vimfiles')
+        return
+    endif
+    if empty(glob(s:vimfiles . '/autoload/plug.vim'))
+        let plug_url = 'https://github.com/junegunn/vim-plug.git'
+        let tmp = tempname()
+        let new = tmp . '/plug.vim'
 
-" let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'tpope/vim-sensible'
-Plugin 'vim-airline/vim-airline'
-Plugin 'vim-airline/vim-airline-themes'
-Plugin 'scrooloose/nerdtree'
-Plugin 'majutsushi/tagbar'
-Plugin 'jpo/vim-railscasts-theme'
-Plugin 'airblade/vim-gitgutter'
-Plugin 'tpope/vim-surround'
-Plugin 'Valloric/YouCompleteMe'
+        try
+            let out = system(printf('git clone --depth 1 %s %s', plug_url, tmp))
+            if v:shell_error
+                echohl ErrorMsg
+                echomsg 'Error downloading vim-plug: ' . out
+                echohl NONE
+                return
+            endif
+
+            if !isdirectory(s:vimfiles . '/autoload')
+                call mkdir(s:vimfiles . '/autoload', 'p')
+            endif
+            call rename(new, s:vimfiles . '/autoload/plug.vim')
+
+        " Install plugins at first
+        autocmd VimEnter * PlugInstall | quit
+        finally
+            if isdirectory(tmp)
+                let dir = '"' . escape(tmp, '"') . '"'
+                silent call system((has('win32') ? 'rmdir /S /Q ' : 'rm -rf ') . dir)
+            endif
+        endtry
+    endif
+    call plug#begin(s:vimfiles . '/plugged')
+endfunction
+
+call s:DownloadVimPlug()
+
+Plug 'tpope/vim-sensible'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'scrooloose/nerdtree'
+Plug 'majutsushi/tagbar'
+Plug 'jpo/vim-railscasts-theme'
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-surround'
+Plug 'SirVer/ultisnips'
+function! s:BuildYCM(info)
+    " info is a dictionary with 3 fields
+    " - name: name of the plugin
+    " - status: 'installed', 'updated', or 'unchanged'
+    " - force: set on PlugInstall! or PlugUpdate!
+    if a:info.status == 'installed' || a:info.force
+        let options = []
+        let requirements = [['clang', '--clang-completer'],
+            \ ['go', '--gocode-completer'],
+            \ ['cargo', '--racer-completer']]
+        for r in requirements
+            if executable(r[0])
+                let options += [r[1]]
+            endif
+        endfor
+        execute '!./install.py ' . join(options, ' ')
+    endif
+endfunction
+let BuildYCMRef = function('s:BuildYCM')
+Plug 'Valloric/YouCompleteMe', { 'do': BuildYCMRef }
+unlet BuildYCMRef
+Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
 
 " All of your Plugins must be added before the following line
-call vundle#end()            " required
-filetype plugin indent on    " required
-" To ignore plugin indent changes, instead use:
-"filetype plugin on
-"
-" Brief help
-" :PluginList       - lists configured plugins
-" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
-" :PluginSearch foo - searches for foo; append `!` to refresh local cache
-" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
-"
-" see :h vundle for more details or wiki for FAQ
-" Put your non-Plugin stuff after this line
+call plug#end()            " required
 
 " Define vimrc autogroup "
 augroup vimrc
@@ -55,8 +126,11 @@ set nowrap
 autocmd vimrc FileType html,php,js,css setlocal tabstop=2 softtabstop=2 shiftwidth=2
 
 " Set vim colorscheme to railscasts "
-colorscheme railscasts
-
+try
+  colorscheme railscasts
+catch /^Vim\%((\a\+)\)\=:E185/
+  colorscheme default
+endtry
 
 " Enable list mode "
 set list
@@ -86,6 +160,14 @@ autocmd vimrc FileType *
     \ if (v:version >= 704 || v:version == 703 && has('patch541')) |
     \ setlocal formatoptions+=j |
     \ endif
+
+" YCM Settings"
+let g:ycm_enable_diagnostic_highlighting = 0
+let g:ycm_autoclose_preview_window_after_insertion = 1
+if exists('s:vimfiles')
+    let g:ycm_global_ycm_extra_conf = s:vimfiles .
+        \ '/plugged/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py'
+endif
 
 " Settings for Tagbar"
 let g:tagbar_left = 1
