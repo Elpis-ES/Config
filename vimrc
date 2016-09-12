@@ -80,28 +80,32 @@ Plug 'jpo/vim-railscasts-theme'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-surround'
 Plug 'SirVer/ultisnips'
-function! s:BuildYCM(info)
-    " info is a dictionary with 3 fields
-    " - name: name of the plugin
-    " - status: 'installed', 'updated', or 'unchanged'
-    " - force: set on PlugInstall! or PlugUpdate!
-    if a:info.status == 'installed' || a:info.force
-        let options = []
-        let requirements = [['clang', '--clang-completer'],
-            \ ['go', '--gocode-completer'],
-            \ ['cargo', '--racer-completer']]
-        for r in requirements
-            if executable(r[0])
-                let options += [r[1]]
-            endif
-        endfor
-        execute '!./install.py ' . join(options, ' ')
-    endif
-endfunction
-let BuildYCMRef = function('s:BuildYCM')
-Plug 'Valloric/YouCompleteMe', { 'do': BuildYCMRef }
-unlet BuildYCMRef
-Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
+if !has('win32unix') &&
+    \ (v:version >= 704 || v:version == 703 && has('patch598')) &&
+    \ executable('cmake') && (has('python3') || s:python26)
+    function! s:BuildYCM(info)
+        " info is a dictionary with 3 fields
+        " - name: name of the plugin
+        " - status: 'installed', 'updated', or 'unchanged'
+        " - force: set on PlugInstall! or PlugUpdate!
+        if a:info.status == 'installed' || a:info.force
+            let options = []
+            let requirements = [['clang', '--clang-completer'],
+                \ ['go', '--gocode-completer'],
+                \ ['cargo', '--racer-completer']]
+            for r in requirements
+                if executable(r[0])
+                    let options += [r[1]]
+                endif
+            endfor
+            execute '!./install.py ' . join(options, ' ')
+        endif
+    endfunction
+    let BuildYCMRef = function('s:BuildYCM')
+    Plug 'Valloric/YouCompleteMe', { 'do': BuildYCMRef }
+    unlet BuildYCMRef
+    Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
+endif
 
 " All of your Plugins must be added before the following line
 call plug#end()            " required
