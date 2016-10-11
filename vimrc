@@ -76,7 +76,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'scrooloose/nerdtree'
 Plug 'majutsushi/tagbar'
-Plug 'jpo/vim-railscasts-theme'
+Plug 'chriskempson/vim-tomorrow-theme'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-surround'
 Plug 'SirVer/ultisnips'
@@ -127,11 +127,12 @@ set scrolloff=4
 set expandtab
 set smartindent
 set nowrap
+set cursorline
 autocmd vimrc FileType html,php,js,css setlocal tabstop=2 softtabstop=2 shiftwidth=2
 
 " Set vim colorscheme to railscasts "
 try
-  colorscheme railscasts
+  colorscheme Tomorrow-Night
 catch /^Vim\%((\a\+)\)\=:E185/
   colorscheme default
 endtry
