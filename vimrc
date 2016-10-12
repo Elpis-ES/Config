@@ -76,7 +76,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'scrooloose/nerdtree'
 Plug 'majutsushi/tagbar'
-Plug 'chriskempson/vim-tomorrow-theme'
+Plug 'jpo/vim-railscasts-theme'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-surround'
 Plug 'SirVer/ultisnips'
@@ -132,7 +132,7 @@ autocmd vimrc FileType html,php,js,css setlocal tabstop=2 softtabstop=2 shiftwid
 
 " Set vim colorscheme to railscasts "
 try
-  colorscheme Tomorrow-Night
+  colorscheme railscasts
 catch /^Vim\%((\a\+)\)\=:E185/
   colorscheme default
 endtry
@@ -165,6 +165,10 @@ autocmd vimrc FileType *
     \ if (v:version >= 704 || v:version == 703 && has('patch541')) |
     \ setlocal formatoptions+=j |
     \ endif
+
+" Settings for vim-airline"
+let g:airline_powerline_fonts = 1
+let g:airline_theme = 'murmur'
 
 " YCM Settings"
 let g:ycm_enable_diagnostic_highlighting = 0
