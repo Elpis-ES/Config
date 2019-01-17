@@ -80,6 +80,7 @@ Plug 'jpo/vim-railscasts-theme'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-surround'
 Plug 'SirVer/ultisnips'
+Plug 'luochen1990/rainbow'
 if !has('win32unix') &&
     \ (v:version >= 704 || v:version == 703 && has('patch598')) &&
     \ executable('cmake') && (has('python3') || s:python26)
@@ -191,3 +192,6 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 let g:NERDTreeDirArrowExpandable = '▶'
 let g:NERDTreeDirArrowCollapsible = '▼'
 let g:NERDTreeShowHidden = 1
+
+" Settings for RainbowParenthesis"
+let g:rainbow_active = 1
