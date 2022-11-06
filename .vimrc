@@ -74,39 +74,11 @@ call s:DownloadVimPlug()
 Plug 'tpope/vim-sensible'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'scrooloose/nerdtree'
-Plug 'majutsushi/tagbar'
 Plug 'jpo/vim-railscasts-theme'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-surround'
 Plug 'SirVer/ultisnips'
 Plug 'luochen1990/rainbow'
-if !has('win32unix') &&
-    \ (v:version >= 704 || v:version == 703 && has('patch598')) &&
-    \ executable('cmake') && (has('python3') || s:python26)
-    function! s:BuildYCM(info)
-        " info is a dictionary with 3 fields
-        " - name: name of the plugin
-        " - status: 'installed', 'updated', or 'unchanged'
-        " - force: set on PlugInstall! or PlugUpdate!
-        if a:info.status == 'installed' || a:info.force
-            let options = []
-            let requirements = [['clang', '--clang-completer'],
-                \ ['go', '--gocode-completer'],
-                \ ['cargo', '--racer-completer']]
-            for r in requirements
-                if executable(r[0])
-                    let options += [r[1]]
-                endif
-            endfor
-            execute '!./install.py ' . join(options, ' ')
-        endif
-    endfunction
-    let BuildYCMRef = function('s:BuildYCM')
-    Plug 'Valloric/YouCompleteMe', { 'do': BuildYCMRef }
-    unlet BuildYCMRef
-    Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
-endif
 
 " All of your Plugins must be added before the following line
 call plug#end()            " required
@@ -127,7 +99,6 @@ set shiftwidth=4
 set scrolloff=4
 set expandtab
 set smartindent
-set nowrap
 set cursorline
 autocmd vimrc FileType html,php,js,css setlocal tabstop=2 softtabstop=2 shiftwidth=2
 
@@ -170,28 +141,6 @@ autocmd vimrc FileType *
 " Settings for vim-airline"
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'murmur'
-
-" YCM Settings"
-let g:ycm_enable_diagnostic_highlighting = 0
-let g:ycm_autoclose_preview_window_after_insertion = 1
-if exists('s:vimfiles')
-    let g:ycm_global_ycm_extra_conf = s:vimfiles .
-        \ '/plugged/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py'
-endif
-
-" Settings for Tagbar"
-let g:tagbar_left = 1
-autocmd vimenter * nested :TagbarOpen
-
-" Settings for NerdTree "
-autocmd vimenter * NERDTree | wincmd l |
-            \ wincmd J | wincmd W |
-            \ wincmd L | NERDTreeFocus |
-            \ execute "normal AA" | wincmd p
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-let g:NERDTreeDirArrowExpandable = '▶'
-let g:NERDTreeDirArrowCollapsible = '▼'
-let g:NERDTreeShowHidden = 1
 
 " Settings for RainbowParenthesis"
 let g:rainbow_active = 1
